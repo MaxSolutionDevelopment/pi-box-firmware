@@ -3,7 +3,7 @@ Description=Ngrok Service for Pi Box
 After=network.target
 
 [Service]
-ExecStart=/snap/bin/ngrok http 8000
+ExecStart=/snap/bin/ngrok http 8000 --log=stdout
 WorkingDirectory=/home/admin/snap/ngrok
 User=admin
 StandardOutput=journal
