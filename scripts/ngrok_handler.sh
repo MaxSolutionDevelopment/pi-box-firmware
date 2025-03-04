@@ -14,6 +14,7 @@ LOG_FILE="/home/admin/logs/ngrok.log"
 if [[ ! -f "$LOG_FILE" ]]; then
     echo "Creating log file..."
     sudo mkdir -p /home/admin/logs
+    sudo chown admin:admin /home/admin/logs
     sudo touch "$LOG_FILE"
 fi
 
@@ -25,7 +26,7 @@ LOG_TO_PUSH=$(sudo journalctl -u ngrok | grep "started tunnel" | tail -n 1)
 NGROK_URL=$(echo $LOG_TO_PUSH | awk '{print $NF}')
 
 # Ghi log
-sudo echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
+echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
 echo "Ngrok URL: $NGROK_URL"
 
 # Gửi URL tới Odoo nếu config hợp lệ
