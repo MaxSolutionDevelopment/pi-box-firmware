@@ -14,7 +14,7 @@ LOG_FILE="/home/admin/logs/ngrok.log"
 if [[ ! -f "$LOG_FILE" ]]; then
     echo "Creating log file..."
     sudo mkdir -p /home/admin/logs
-    touch "$LOG_FILE"
+    sudo touch "$LOG_FILE"
 fi
 
 # Lấy URL của ngrok từ API cục bộ (ngrok service chạy => API ở cổng 4040)
