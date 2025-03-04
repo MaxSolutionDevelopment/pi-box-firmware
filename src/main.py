@@ -19,6 +19,7 @@ if __name__ == "__main__":
 class NgrokConfig(BaseModel):
     authtoken: str
     configpath: str = None
+    port: int = 8000
 
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
@@ -28,9 +29,15 @@ def set_ngrok_token(config: NgrokConfig):
     try:
         # Tạo cấu hình cho ngrok.yml
         ngrok_yml_content = f"""version: "3"
-agent:
-    authtoken: {config.authtoken}
-"""
+
+        agent:
+            authtoken: {config.authtoken}
+        
+        tunnels:
+            first-app:
+                addr: {config.port}
+                proto: http
+        """
         config_path = config.configpath if config.configpath else NGROK_CONFIG_PATH
 
         # # Kiểm tra xem file ngrok.yml đã tồn tại chưa
