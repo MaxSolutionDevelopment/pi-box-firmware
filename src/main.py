@@ -29,6 +29,6 @@ def health_check():
 def trigger_update():
     try:
         result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True)
-        return {"status": "success", "output": result.stdout.strip()}
+        return {"status": "success", "output": result.stdout.strip(), "details": str(result)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise {"status": "error", "message": str(e)}
