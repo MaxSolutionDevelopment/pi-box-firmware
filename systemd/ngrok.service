@@ -3,10 +3,13 @@ Description=Ngrok Service for Pi Box
 After=network.target
 
 [Service]
-ExecStart=/snap/bin/ngrok http 8000 --log=stdout
+ExecStart=/snap/bin/ngrok http 8000
 WorkingDirectory=/home/admin/snap/ngrok
 User=admin
+StandardOutput=journal
+StandardError=journal
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
