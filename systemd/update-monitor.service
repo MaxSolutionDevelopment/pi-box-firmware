@@ -1,0 +1,13 @@
+[Unit]
+Description=Monitor GitHub for Firmware Updates
+After=network.target
+
+[Service]
+ExecStart=/bin/bash -c "while true; do git -C /home/admin/pi-box-firmware fetch; if [ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]; then /home/admin/pi-box-firmware/scripts/update.sh; fi; sleep 3600; done"
+WorkingDirectory=/home/admin/pi-box-firmware
+User=admin
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
