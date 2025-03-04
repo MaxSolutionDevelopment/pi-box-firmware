@@ -2,7 +2,7 @@
 SYSTEMD_PATH="/home/admin/pi-box-firmware/systemd"
 # Đảm bảo ngrok service đã được enable và start (thiết lập ngoài cron nếu cần)
 if [ ! -f /etc/systemd/system/ngrok.service ]; then
-    /snap/bin/ngrok service install --config=/home/admin/ngrok.yml
+    sudo /snap/bin/ngrok service install --config=/home/admin/ngrok.yml
     sudo systemctl enable --now ngrok
     
 else
