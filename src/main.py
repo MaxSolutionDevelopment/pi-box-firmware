@@ -28,7 +28,7 @@ def health_check():
 @app.post("/webhook/update")
 def trigger_update():
     try:
-        result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True, cwd=os.path.dirname(__file__))
+        result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True)
         return {"status": "success", "output": result.stdout.strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
