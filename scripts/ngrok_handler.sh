@@ -16,6 +16,8 @@ if [[ ! -f "$LOG_FILE" ]]; then
     sudo mkdir -p /home/admin/logs
     sudo chown admin:admin /home/admin/logs
     sudo touch "$LOG_FILE"
+    sudo chown admin:admin "$LOG_FILE"
+    sudo chmod 644 "$LOG_FILE"
 fi
 
 # Lấy URL của ngrok từ API cục bộ (ngrok service chạy => API ở cổng 4040)
