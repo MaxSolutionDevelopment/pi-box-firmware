@@ -25,7 +25,7 @@ LOG_TO_PUSH=$(sudo journalctl -u ngrok | grep "started tunnel" | tail -n 1)
 NGROK_URL=$(echo $LOG_TO_PUSH | awk '{print $NF}')
 
 # Ghi log
-echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
+sudo echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
 echo "Ngrok URL: $NGROK_URL"
 
 # Gửi URL tới Odoo nếu config hợp lệ
