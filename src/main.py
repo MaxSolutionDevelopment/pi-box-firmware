@@ -39,7 +39,7 @@ def trigger_update():
         raise {"status": "error", "message": str(e)}
 
 # Webhook endpoint để trigger update service
-@app.post("/webhook/update")
+@app.post("/webhook/update_service")
 def trigger_update():
     try:
         env = os.environ.copy()
