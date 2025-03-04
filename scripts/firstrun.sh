@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Đường dẫn tới thư mục chứa main.py và các file cấu hình
-SERVICE_PATH="/home/pi/pi-box-firmware/src/main.py"
+SERVICE_PATH="/home/admin/pi-box-firmware/src/main.py"
 SERVICE_NAME="pi-box.service"
+PYTHON_ENV="/home/admin/pi-box-firmware/venv/bin/python"
+WORKING_DIR="/home/admin/pi-box-firmware"
 
 # Kiểm tra xem service đã tồn tại chưa
 if systemctl list-units --type=service --state=running | grep -q $SERVICE_NAME; then
@@ -17,10 +19,14 @@ Description=FastAPI Service for Pi Box
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 $SERVICE_PATH
-WorkingDirectory=/home/pi/pi-box-firmware
+ExecStart=$PYTHON_ENV $SERVICE_PATH
+WorkingDirectory=$WORKING_DIR
+Environment="PATH=/home/admin/pi-box-firmware/venv/bin:$PATH"
 User=admin
 Restart=always
+RestartSec=10
+StartLimitInterval=0
+StartLimitBurst=0
 
 [Install]
 WantedBy=multi-user.target" | sudo tee /etc/systemd/system/$SERVICE_NAME > /dev/null
