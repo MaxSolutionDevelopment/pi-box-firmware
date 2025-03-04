@@ -19,7 +19,7 @@ After=network.target
 [Service]
 ExecStart=/usr/bin/python3 $SERVICE_PATH
 WorkingDirectory=/home/pi/pi-box-firmware
-User=pi
+User=admin
 Restart=always
 
 [Install]
