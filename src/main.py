@@ -3,6 +3,7 @@ import subprocess
 import json
 import os
 from pathlib import Path
+import sys
 
 app = FastAPI()
 
@@ -21,13 +22,17 @@ def health_check():
         "status": "ok",
         "version": "0.1.0",
         "ip": "localhost",  # Sẽ thay thế bằng IP thực tế
-        "service": "active"
+        "service": "active",
+        "os": os.uname(),
+        "sys": sys.version,
     }
 
 # Webhook endpoint để trigger update code
 @app.post("/webhook/update")
 def trigger_update():
     try:
+        env = os.environ.copy()
+        env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"  # Thêm các đường dẫn tới các thư mục chứa git và sudo
         result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True)
         return {"status": "success", "output": result.stdout.strip(), "details": str(result)}
     except Exception as e:
