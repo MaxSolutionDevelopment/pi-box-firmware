@@ -12,7 +12,8 @@ ODOO_URL=$(jq -r '.ODOO_WEBHOOK_URL' "$DEFAULT_CONFIG_FILE")
 LOG_FILE="/home/admin/logs/ngrok.log"
 # kiểm tra và tạo file log
 if [[ ! -f "$LOG_FILE" ]]; then
-    mkdir -p /home/admin/logs
+    echo "Creating log file..."
+    sudo mkdir -p /home/admin/logs
     touch "$LOG_FILE"
 fi
 
