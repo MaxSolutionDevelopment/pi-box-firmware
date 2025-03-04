@@ -15,6 +15,9 @@
     - pyjwt
     - python-multipart
 
+## APT PACKAGES
+    - avahi-daemon
+    - avahi-utils
 
 ## CHANGES
 - 2025-04-03: Add basic structure
