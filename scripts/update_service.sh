@@ -7,7 +7,7 @@ if [ ! -f /etc/systemd/system/ngrok.service ]; then
     
 else
     echo "Ngrok service already exists."
-
+    sudo systemctl restart restart ngrok.service
     # sudo cp $SYSTEMD_PATH/ngrok.service /etc/systemd/system/
     # echo "Ngrok service already exists. Updating..."
     # sudo systemctl daemon-reload
