@@ -33,7 +33,7 @@ def trigger_update():
     try:
         env = os.environ.copy()
         env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"  # Thêm các đường dẫn tới các thư mục chứa git và sudo
-        result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True)
+        result = subprocess.run(["/bin/bash", "scripts/update.sh"], capture_output=True, text=True, env=env)
         return {"status": "success", "output": result.stdout.strip(), "details": str(result)}
     except Exception as e:
         raise {"status": "error", "message": str(e)}
