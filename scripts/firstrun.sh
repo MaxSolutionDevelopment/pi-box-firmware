@@ -74,9 +74,11 @@ use-ipv6=no
 ratelimit-interval-usec=1000000
 ratelimit-burst=1000
 
+[publish]
 publish-addresses=yes
 publish-hinfo=yes
 publish-workstation=yes
+publish-domain=yes
 
 [wide-area]
 enable-wide-area=yes
