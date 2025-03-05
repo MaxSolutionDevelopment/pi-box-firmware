@@ -4,15 +4,20 @@ import json
 import os
 from pathlib import Path
 import sys
+import base64
 from pydantic import BaseModel
 try:
     from dotenv import load_dotenv
 except ImportError:
     echo("Please install python-dotenv")
 
-# try import brother_ql
 try:
-    import brother_ql
+    from io import BytesIO
+    from brother_ql.raster import BrotherQLRaster
+    from brother_ql.backends.helpers import send
+    from brother_ql.conversion import convert
+    from PIL import Image
+    
 except ImportError:
     echo("Please install brother_ql")
     
@@ -36,15 +41,10 @@ class NgrokConfig(BaseModel):
     port: int = 8000
 
 class PrintData(BaseModel):
-    vendor_id: str
     printer_id: str = '0x04f9:0x209c'
-    printer_model: str
-    label_type: str
-    label_size: str
-    label_content: str
-    label_orientation: str
-    data: dict = None
-
+    printer_model: str = 'QL-810W'
+    label_size: str = '62'
+    data: str  = ''
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
@@ -90,8 +90,23 @@ def print_label(data: PrintData):
     try:
         # Logic in here
         ## .............
+        pdf_data = base64.b64decode(data.data)
 
+        # Convert PDF data to image
+        image = Image.open(BytesIO(pdf_data))
+        image = image.convert("1")
+        pdf_data = BytesIO()
+        image.save(pdf_data, format="PNG")
+        pdf_data = pdf_data.getvalue()
+
+        qlr = BrotherQLRaster(data.printer_model)
+        qlr.exception_on_warning = True
+
+        instructions = convert(qlr=qlr, image=pdf_data, label=data.label_size)
+        
+        send(instructions=instructions, printer_identifier=data.printer_id, backend_identifier="pyusb", blocking=True)
         return {"status": "success", "message": "Label printed successfully."}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}")
 
