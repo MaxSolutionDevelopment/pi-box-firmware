@@ -9,7 +9,7 @@ from pydantic import BaseModel
 try:
     from dotenv import load_dotenv
 except ImportError:
-    echo("Please install python-dotenv")
+    print("Please install python-dotenv")
 
 try:
     from io import BytesIO
@@ -19,8 +19,10 @@ try:
     from PIL import Image
     import pdf2image
     
-except ImportError:
-    echo("Please install brother_ql and pillow")
+except ImportError as e:
+    print("Please install brother_ql, pdf2image, pillow")
+    print(str(e))
+    sys.exit(1)
     
 app = FastAPI()
 class ConfigUpdate(BaseModel):
