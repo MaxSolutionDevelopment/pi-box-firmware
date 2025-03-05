@@ -88,20 +88,10 @@ def update_config(config: ConfigUpdate):
 @app.post('/print')
 def print_label(data: PrintData):
     try:
-        # Load .env file
-        load_dotenv(dotenv_path=ENV_FILE_PATH)
+        # Logic in here
+        ## .............
 
-        # Get data from request
-        vendor_id = data.vendor_id
-        printer_id = data.printer_id
-        printer_model = data.printer_model
-        label_type = data.label_type
-        label_size = data.label_size
-        label_content = data.label_content
-        label_orientation = data.label_orientation
-        custom_data = data.data
-        #.....
-    
+        return {"status": "success", "message": "Label printed successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}")
 
