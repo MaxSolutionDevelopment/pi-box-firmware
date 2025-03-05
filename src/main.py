@@ -115,7 +115,7 @@ def print_label(data: PrintData):
         return {"status": "success", "message": "Label printed successfully."}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}", debug=debug_logs)
 
 @app.post("/set-ngrok-token")
 def set_ngrok_token(config: NgrokConfig):
