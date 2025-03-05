@@ -23,7 +23,9 @@ After=network.target
 [Service]
 ExecStart=$PYTHON_ENV $SERVICE_PATH
 WorkingDirectory=$WORKING_DIR
-Environment="PATH=/home/admin/pi-box-firmware/venv/bin:$PATH"
+Environment="PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+StandardOutput=append:/home/admin/logs/pi-box-output.log
+StandardError=append:/home/admin/logs/pi-box-error.log
 User=admin
 Restart=always
 RestartSec=10
@@ -62,7 +64,7 @@ else
     read DEVICE_NAME
     echo "DEVICE_NAME=" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
     echo "File .env created successfully."
-
+fi
     #tạo nội dung avahi-daemon.conf
     echo    "
 [server]

@@ -8,6 +8,10 @@ Pi Box Firmware là phần mềm chạy trên Raspberry Pi, dùng để điều 
    apt update && apt install git
    apt install python3-pip python3-venv python3-dev libffi-dev libssl-dev python-dotenv
    sudo apt install avahi-daemon avahi-utils
+   sudo mkdir -p /home/admin/logs
+   sudo chmod -R 777 /home/admin/logs
+   sudo usermod -aG lp $USER
+   sudo /bin/chmod 777 /dev/usb/lp0
    git clone https://github.com/your-repo/pi-box-firmware.git
     ```
 2. Tạo virtualenv:
