@@ -112,37 +112,6 @@ def update_config(config: ConfigUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating config: {str(e)}")
 
-@app.post('/print')
-def print_label(data: PrintData):
-    try:
-        debug_logs = ""
-        # Logic in here
-        ## .............
-        pdf_data = base64.b64decode(data.data)
-        debug_logs += f"PDF decode done\n"
-
-        # Convert PDF data to image
-        image = Image.open(BytesIO(pdf_data))
-        debug_logs += f"Image opened\n"
-        image = image.convert("1")
-        debug_logs += f"Image converted\n"
-        pdf_data = BytesIO()
-        image.save(pdf_data, format="PNG")
-        debug_logs += f"PDF data saved\n"
-        pdf_data = pdf_data.getvalue()
-        debug_logs += f"PDF data: {pdf_data}\n"
-
-        qlr = BrotherQLRaster(data.printer_model)
-        qlr.exception_on_warning = True
-
-        instructions = convert(qlr=qlr, image=pdf_data, label=data.label_size)
-        
-        send(instructions=instructions, printer_identifier=data.printer_id, backend_identifier="pyusb", blocking=True)
-        return {"status": "success", "message": "Label printed successfully."}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}, debug_logs: {debug_logs}")
-
 @app.post("/set-ngrok-token")
 def set_ngrok_token(config: NgrokConfig):
     try:
