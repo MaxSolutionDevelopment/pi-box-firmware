@@ -17,20 +17,12 @@ try:
     from brother_ql.backends.helpers import send
     from brother_ql.conversion import convert
     from PIL import Image
+    import pdf2image
     
 except ImportError:
-    echo("Please install brother_ql")
+    echo("Please install brother_ql and pillow")
     
 app = FastAPI()
-
-@app.get('/')
-def read_root():
-    return {"Hello": "World"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
 class ConfigUpdate(BaseModel):
     vendor_id: str = None
     env_path: str = '/home/admin/pi-box-firmware/.env'
@@ -49,6 +41,40 @@ class PrintData(BaseModel):
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
+
+@app.get('/')
+def read_root():
+    return {"Hello": "World"}
+
+@app.post('/print')
+def print_label(data: PrintData):
+    try:
+        debug_logs = ""
+        # Logic in here
+        ## .............
+        pdf_data = base64.b64decode(data.data)
+        debug_logs += f"PDF decode done\n"
+        images = pdf2image.convert_from_bytes(pdf_data)
+        # Convert PDF pages to images
+        images_list = []
+        for page in images:
+            img_byte_arr = BytesIO()
+            page.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+            images_list.append(Image.open(BytesIO(img_byte_arr)))
+
+        debug_logs += f"Converted {len(images_list)} pages to images\n"
+
+        qlr = BrotherQLRaster(data.printer_model)
+        qlr.exception_on_warning = True
+
+        instructions = convert(qlr=qlr, images=images_list, label=data.label_size)
+        
+        send(instructions=instructions, printer_identifier=data.printer_id, backend_identifier="pyusb", blocking=True)
+        return {"status": "success", "message": "Label printed successfully."}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}, debug_logs: {debug_logs}")
 
 @app.post("/update-config")
 def update_config(config: ConfigUpdate):
@@ -93,16 +119,16 @@ def print_label(data: PrintData):
         # Logic in here
         ## .............
         pdf_data = base64.b64decode(data.data)
-        debug_logs += f"PDF data: {pdf_data}\n"
+        debug_logs += f"PDF decode done\n"
 
         # Convert PDF data to image
         image = Image.open(BytesIO(pdf_data))
-        debug_logs += f"Image: {image}\n"
+        debug_logs += f"Image opened\n"
         image = image.convert("1")
-        debug_logs += f"Image: {image}\n"
+        debug_logs += f"Image converted\n"
         pdf_data = BytesIO()
         image.save(pdf_data, format="PNG")
-        debug_logs += f"PDF data: {pdf_data}\n"
+        debug_logs += f"PDF data saved\n"
         pdf_data = pdf_data.getvalue()
         debug_logs += f"PDF data: {pdf_data}\n"
 
@@ -183,3 +209,7 @@ def trigger_update():
         return {"status": "success", "output": result.stdout.strip(), "details": str(result)}
     except Exception as e:
         raise {"status": "error", "message": str(e)}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
