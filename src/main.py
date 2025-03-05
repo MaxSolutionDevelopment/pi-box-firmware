@@ -45,6 +45,7 @@ class PrintData(BaseModel):
     printer_model: str = 'QL-810W'
     label_size: str = '62'
     data: str  = ''
+    debug: bool = False
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
@@ -88,16 +89,22 @@ def update_config(config: ConfigUpdate):
 @app.post('/print')
 def print_label(data: PrintData):
     try:
+        debug_logs = ""
         # Logic in here
         ## .............
         pdf_data = base64.b64decode(data.data)
+        debug_logs += f"PDF data: {pdf_data}\n"
 
         # Convert PDF data to image
         image = Image.open(BytesIO(pdf_data))
+        debug_logs += f"Image: {image}\n"
         image = image.convert("1")
+        debug_logs += f"Image: {image}\n"
         pdf_data = BytesIO()
         image.save(pdf_data, format="PNG")
+        debug_logs += f"PDF data: {pdf_data}\n"
         pdf_data = pdf_data.getvalue()
+        debug_logs += f"PDF data: {pdf_data}\n"
 
         qlr = BrotherQLRaster(data.printer_model)
         qlr.exception_on_warning = True
