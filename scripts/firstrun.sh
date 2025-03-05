@@ -77,7 +77,6 @@ ratelimit-burst=1000
 publish-addresses=yes
 publish-hinfo=yes
 publish-workstation=yes
-publish-domain=yes
 
 [wide-area]
 enable-wide-area=yes
