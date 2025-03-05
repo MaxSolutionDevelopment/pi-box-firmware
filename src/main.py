@@ -50,6 +50,7 @@ def read_root():
 @app.post('/print')
 def print_label(data: PrintData):
     try:        
+        debug_logs = ""
         # Logic in here
         ## .............
         pdf_data = base64.b64decode(data.data)
