@@ -22,7 +22,6 @@ try:
 except ImportError as e:
     print("Please install brother_ql, pdf2image, pillow")
     print(str(e))
-    sys.exit(1)
     
 app = FastAPI()
 class ConfigUpdate(BaseModel):
@@ -50,8 +49,7 @@ def read_root():
 
 @app.post('/print')
 def print_label(data: PrintData):
-    try:
-        debug_logs = ""
+    try:        
         # Logic in here
         ## .............
         pdf_data = base64.b64decode(data.data)
@@ -62,8 +60,11 @@ def print_label(data: PrintData):
         for page in images:
             img_byte_arr = BytesIO()
             page.save(img_byte_arr, format='PNG')
+
             img_byte_arr = img_byte_arr.getvalue()
-            images_list.append(Image.open(BytesIO(img_byte_arr)))
+            img = Image.open(BytesIO(img_byte_arr))
+            img = img.convert("1")
+            images_list.append(img)
 
         debug_logs += f"Converted {len(images_list)} pages to images\n"
 
