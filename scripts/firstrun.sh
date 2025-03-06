@@ -64,6 +64,7 @@ else
     read DEVICE_NAME
     echo "DEVICE_NAME=" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
     echo "File .env created successfully."
+    sudo chown admin:admin /home/admin/pi-box-firmware/.env
 fi
     #tạo nội dung avahi-daemon.conf
     echo    "
