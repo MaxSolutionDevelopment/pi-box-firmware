@@ -3,7 +3,7 @@
 
 # Kiểm tra và lấy URL của Odoo từ file .env
 
-ODOO_URL=$(grep -oP 'ODOO_WEBHOOK_URL=\K[^ ]+' /home/admin/pi-box-firmware/.env)
+ODOO_URL=$(grep -oP 'ODOO_URL=\K[^ ]+' /home/admin/pi-box-firmware/.env)
 DEVICE_CODE=$(grep -oP 'DEVICE_CODE=\K[^ ]+' /home/admin/pi-box-firmware/.env)
 # ODOO_URL=$(jq -r '.ODOO_WEBHOOK_URL' "$DEFAULT_CONFIG_FILE")
 LOG_FILE="/home/admin/logs/ngrok.log"
