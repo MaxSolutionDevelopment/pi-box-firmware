@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 import subprocess
 import json
 import os
@@ -7,7 +8,7 @@ import sys
 import base64
 from pydantic import BaseModel
 try:
-    from dotenv import load_dotenv
+    from dotenv import load_dotenv, set_key
 except ImportError:
     print("Please install python-dotenv")
 
@@ -39,6 +40,12 @@ class PrintData(BaseModel):
     label_size: str = '62'
     data: str  = ''
     debug: bool = False
+class CloudflareConfig(BaseModel):
+    tunnel_name: str
+    domain: str = None
+    account_token: str = None
+    config_path: str = "/home/admin/.cloudflared/config.yml"
+    credentials_file: str = None
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
@@ -46,6 +53,28 @@ ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
 @app.get('/')
 def read_root():
     return {"Hello": "World"}
+
+# Route để hiển thị form và cập nhật thông số
+@app.get("/update-env", response_class=HTMLResponse)
+async def update_env():
+    html_content = """
+    <html>
+    <head>
+        <title>Update Config</title>
+    </head>
+    <body>
+        <h1>Update Config</h1>
+        <form action="/update-config" method="post">
+            <label for="vendor_id">Vendor ID:</label><br>
+            <input type="text" id="vendor_id" name="vendor_id"><br>
+            <label for="custom_config">Custom Config:</label><br>
+            <textarea id="custom_config" name="custom_config"></textarea><br>
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @app.post('/print')
 def print_label(data: PrintData):
@@ -189,6 +218,112 @@ def trigger_update():
         return {"status": "success", "output": result.stdout.strip(), "details": str(result)}
     except Exception as e:
         raise {"status": "error", "message": str(e)}
+
+# Thêm các routes sau phần routes hiện có
+
+@app.post("/cloudflare/setup")
+def setup_cloudflare(config: CloudflareConfig):
+    try:
+        # Kiểm tra và cài đặt cloudflared nếu chưa có
+        result = subprocess.run(["which", "cloudflared"], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise HTTPException(status_code=400, detail="Cloudflared not installed. Please run setup_cloudflared.sh first")
+
+        # Login với account token mới nếu được cung cấp
+        if config.account_token:
+            token_process = subprocess.run(
+                ["cloudflared", "tunnel", "token", config.account_token],
+                capture_output=True,
+                text=True
+            )
+            if token_process.returncode != 0:
+                raise HTTPException(status_code=400, detail=f"Failed to authenticate: {token_process.stderr}")
+
+        # Tạo tunnel mới
+        tunnel_process = subprocess.run(
+            ["cloudflared", "tunnel", "create", config.tunnel_name],
+            capture_output=True,
+            text=True
+        )
+        if tunnel_process.returncode != 0:
+            raise HTTPException(status_code=400, detail=f"Failed to create tunnel: {tunnel_process.stderr}")
+        
+        tunnel_id = tunnel_process.stdout.strip().split()[-1]
+
+        # Tạo config file
+        config_content = f"""
+tunnel: {tunnel_id}
+credentials-file: {config.credentials_file or f'/home/admin/.cloudflared/{tunnel_id}.json'}
+
+ingress:
+  - hostname: {config.domain or f'{config.tunnel_name}.your-domain.com'}
+    service: http://localhost:8000
+  - service: http_status:404
+"""
+        with open(config.config_path, "w") as f:
+            f.write(config_content)
+
+        # Restart cloudflared service
+        subprocess.run(["sudo", "systemctl", "restart", "cloudflared"])
+
+        return {
+            "status": "success",
+            "tunnel_id": tunnel_id,
+            "config_path": config.config_path
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error setting up Cloudflare: {str(e)}")
+
+@app.get("/cloudflare/status")
+def get_cloudflare_status():
+    try:
+        # Kiểm tra trạng thái service
+        service_status = subprocess.run(
+            ["systemctl", "is-active", "cloudflared"],
+            capture_output=True,
+            text=True
+        ).stdout.strip()
+
+        # Đọc thông tin cấu hình hiện tại
+        config_path = "/home/admin/.cloudflared/config.yml"
+        current_config = {}
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                current_config = f.read()
+
+        # Kiểm tra kết nối tunnel
+        tunnel_status = subprocess.run(
+            ["cloudflared", "tunnel", "info"],
+            capture_output=True,
+            text=True
+        ).stdout.strip()
+
+        return {
+            "service_status": service_status,
+            "current_config": current_config,
+            "tunnel_status": tunnel_status
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting Cloudflare status: {str(e)}")
+
+@app.delete("/cloudflare/tunnel/{tunnel_name}")
+def delete_cloudflare_tunnel(tunnel_name: str):
+    try:
+        # Xóa tunnel
+        delete_process = subprocess.run(
+            ["cloudflared", "tunnel", "delete", tunnel_name],
+            capture_output=True,
+            text=True
+        )
+        if delete_process.returncode != 0:
+            raise HTTPException(status_code=400, detail=f"Failed to delete tunnel: {delete_process.stderr}")
+
+        return {"status": "success", "message": f"Tunnel {tunnel_name} deleted successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting tunnel: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

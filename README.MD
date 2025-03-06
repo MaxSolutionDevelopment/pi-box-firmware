@@ -39,6 +39,41 @@ Pi Box Firmware là phần mềm chạy trên Raspberry Pi, dùng để điều 
     sudo journalctl -u pi-box -n 100
     ```
 
+## Cài đặt Cloudflare Tunnel
+1. Chạy script cài đặt:
+    ```bash
+    cd /home/admin/pi-box-firmware/scripts
+    sudo chmod +x setup_cloudflared.sh
+    ./setup_cloudflared.sh
+    ```
+
+2. Đăng nhập vào Cloudflare Dashboard và thực hiện các bước sau:
+   - Thêm DNS record cho tunnel
+   - Cấu hình SSL/TLS mode thành "Full"
+   - Kiểm tra kết nối tunnel
+
+3. Kiểm tra trạng thái:
+    ```bash
+    sudo systemctl status cloudflared
+    ```
+
+4. Xem logs:
+    ```bash
+    sudo journalctl -u cloudflared -f
+    ```
+
+Cấu hình thông qua API:
+# Cài đặt tunnel mới
+curl -X POST http://localhost:8000/cloudflare/setup \
+  -H "Content-Type: application/json" \
+  -d '{"tunnel_name": "new-tunnel", "domain": "myapp.example.com", "account_token": "your-token"}'
+
+# Kiểm tra trạng thái
+curl http://localhost:8000/cloudflare/status
+
+# Xóa tunnel
+curl -X DELETE http://localhost:8000/cloudflare/tunnel/old-tunnel
+
 ## PYTHON DEPENDENCIES
     - fastapi
     - uvicorn

@@ -49,3 +49,26 @@ else
     echo "avahi service is not running"
 fi
 
+# Kiểm tra trạng thái cloudflared service
+if ! systemctl is-active --quiet cloudflared; then
+    echo "Cloudflared service is not running. Attempting to restart..."
+    sudo systemctl restart cloudflared
+    
+    # Kiểm tra lại sau khi khởi động
+    if systemctl is-active --quiet cloudflared; then
+        echo "Cloudflared service restarted successfully"
+    else
+        echo "Failed to restart cloudflared service"
+        exit 1
+    fi
+fi
+
+# Kiểm tra trạng thái tunnel
+TUNNEL_STATUS=$(cloudflared tunnel info 2>&1)
+if [[ $? -ne 0 ]]; then
+    echo "Tunnel check failed: $TUNNEL_STATUS"
+    # Thử khởi động lại service
+    sudo systemctl restart cloudflared
+else
+    echo "Tunnel is running: $TUNNEL_STATUS"
+fi
