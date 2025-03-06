@@ -22,10 +22,10 @@ PRINTER_STATUS=""
 # kiểm tra và lấy thông tin máy in
 if lsusb | grep -q $PRINTER_NAME; then
     echo "USB device found."
-    PRINTER_STATUS="connected"
+    PRINTER_STATUS="online"
 else
     echo "USB device not found."
-    PRINTER_STATUS="disconnected"
+    PRINTER_STATUS="offline"
 fi
 
 
