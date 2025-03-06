@@ -1,14 +1,11 @@
 #!/bin/bash
 # Khởi động Ngrok và gửi URL tới Odoo nếu config có URL
 
-# Đọc config
-DEFAULT_CONFIG_FILE="/home/admin/pi-box-firmware/config/pi_box_config.json"
-CONFIG_FILE="home/admin/pi_box_config.json"
-if [[ -f "$CONFIG_FILE" ]]; then
-    DEFAULT_CONFIG_FILE="$CONFIG_FILE"
-fi
+# Kiểm tra và lấy URL của Odoo từ file .env
 
-ODOO_URL=$(jq -r '.ODOO_WEBHOOK_URL' "$DEFAULT_CONFIG_FILE")
+ODOO_URL=$(grep -oP 'ODOO_WEBHOOK_URL=\K[^ ]+' /home/admin/pi-box-firmware/.env)
+DEVICE_CODE=$(grep -oP 'DEVICE_CODE=\K[^ ]+' /home/admin/pi-box-firmware/.env)
+# ODOO_URL=$(jq -r '.ODOO_WEBHOOK_URL' "$DEFAULT_CONFIG_FILE")
 LOG_FILE="/home/admin/logs/ngrok.log"
 # kiểm tra và tạo file log
 if [[ ! -f "$LOG_FILE" ]]; then
@@ -32,7 +29,12 @@ echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
 echo "Ngrok URL: $NGROK_URL"
 
 # Gửi URL tới Odoo nếu config hợp lệ
-if [[ -n "$ODOO_URL" && "$ODOO_URL" != "null" ]]; then
+# if [[ -n "$ODOO_URL" && "$ODOO_URL" != "null" ]]; then
+#     echo "Sending Ngrok URL to Odoo..."
+#     curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\"}" "$ODOO_URL"
+# fi
+
+if [[ -n "$ODOO_URL" && "$ODOO_URL" != "null" && -n "$DEVICE_CODE" && "$DEVICE_CODE" != "null" ]]; then
     echo "Sending Ngrok URL to Odoo..."
-    curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\"}" "$ODOO_URL"
+    curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\", \"device_code\": \"$DEVICE_CODE\"}" "$ODOO_URL"
 fi

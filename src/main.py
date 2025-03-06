@@ -28,6 +28,8 @@ app = FastAPI()
 class ConfigUpdate(BaseModel):
     vendor_id: str = None
     env_path: str = '/home/admin/pi-box-firmware/.env'
+    device_code: str = None
+    odoo_webhook_url: str = None
     custom_config: dict = None
 class NgrokConfig(BaseModel):
     authtoken: str
@@ -57,7 +59,21 @@ def read_root():
 # Route để hiển thị form và cập nhật thông số
 @app.get("/update-env", response_class=HTMLResponse)
 async def update_env():
-    html_content = """
+    #load current config
+
+    env_file_path = ENV_FILE_PATH
+    env_content = ""
+    with open(env_file_path, "r") as file:
+        env_content = file.read()
+
+    env_dict = dict()
+    for line in env_content.split("\n"):
+        if line:
+            key, value = line.split("=")
+            env_dict[key] = value
+
+
+    htmlcontent = f"""
     <html>
     <head>
         <title>Update Config</title>
@@ -66,15 +82,17 @@ async def update_env():
         <h1>Update Config</h1>
         <form action="/update-config" method="post">
             <label for="vendor_id">Vendor ID:</label><br>
-            <input type="text" id="vendor_id" name="vendor_id"><br>
-            <label for="custom_config">Custom Config:</label><br>
-            <textarea id="custom_config" name="custom_config"></textarea><br>
+            <input type="text" id="vendor_id" name="vendor_id" value="{env_dict.get('VENDOR_ID', '')}"><br>
+            <label for="device_code">Device Code:</label><br>
+            <input type="text" id="device_code" name="device_code" value="{env_dict.get('DEVICE_CODE', '')}"><br>
+            <label for="odoo_webhook_url">Odoo Webhook URL:</label><br>
+            <input type="text" id="odoo_webhook_url" name="odoo_webhook_url" value="{env_dict.get('ODOO_WEBHOOK_URL', '')}"><br>
             <input type="submit" value="Submit">
         </form>
     </body>
     </html>
     """
-    return HTMLResponse(content=html_content)
+    return HTMLResponse(content=htmlcontent)
 
 @app.post('/print')
 def print_label(data: PrintData):
@@ -136,6 +154,12 @@ def update_config(config: ConfigUpdate):
         # Update config
         if config.vendor_id:
             env_dict["VENDOR_ID"] = config.vendor_id
+
+        if config.device_code:
+            env_dict["DEVICE_CODE"] = config.device_code
+
+        if config.odoo_webhook_url:
+            env_dict["ODOO_URL"] = config.odoo_webhook_url
 
         if config.custom_config:
             for key, value in config.custom_config.items():
