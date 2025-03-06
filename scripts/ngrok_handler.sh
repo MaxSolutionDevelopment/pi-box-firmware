@@ -17,6 +17,18 @@ if [[ ! -f "$LOG_FILE" ]]; then
     sudo chmod 644 "$LOG_FILE"
 fi
 
+PRINTER_NAME="QL-810W"
+PRINTER_STATUS=""
+# kiểm tra và lấy thông tin máy in
+if lsusb | grep -q $PRINTER_NAME; then
+    echo "USB device found."
+    PRINTER_STATUS="connected"
+else
+    echo "USB device not found."
+    PRINTER_STATUS="disconnected"
+fi
+
+
 # Lấy URL của ngrok từ API cục bộ (ngrok service chạy => API ở cổng 4040)
 # Yêu cầu: curl đến http://127.0.0.1:4040/api/tunnels và phân tích JSON để lấy public_url
 # NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
@@ -28,13 +40,9 @@ NGROK_URL=$(echo $LOG_TO_PUSH | awk '{print $NF}')
 echo "[$(date)] $NGROK_URL" >> "$LOG_FILE"
 echo "Ngrok URL: $NGROK_URL"
 
-# Gửi URL tới Odoo nếu config hợp lệ
-# if [[ -n "$ODOO_URL" && "$ODOO_URL" != "null" ]]; then
-#     echo "Sending Ngrok URL to Odoo..."
-#     curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\"}" "$ODOO_URL"
-# fi
-
 if [[ -n "$ODOO_URL" && "$ODOO_URL" != "null" && -n "$DEVICE_CODE" && "$DEVICE_CODE" != "null" ]]; then
     echo "Sending Ngrok URL to Odoo..."
-    curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\", \"device_code\": \"$DEVICE_CODE\"}" "$ODOO_URL"
+    curl -X POST -H "Content-Type: application/json" -d "{\"ngrok_url\": \"$NGROK_URL\", 
+    \"device_code\": \"$DEVICE_CODE\",
+    \"printer_status\": \"$PRINTER_STATUS\"}" "$ODOO_URL"
 fi
