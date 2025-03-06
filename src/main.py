@@ -53,7 +53,6 @@ def print_label(data: PrintData):
         debug_logs = ""
         # Logic in here
         ## .............
-        pdf_data = base64.b64decode(data.data)
         debug_logs += f"PDF decode done\n"
         if data.data.startswith("data:image/png;base64,"):
             base64_data = data.data.split("data:image/png;base64,")[1]
@@ -62,6 +61,7 @@ def print_label(data: PrintData):
             image = image.convert("1")
             images_list = [image]
         else:
+            pdf_data = base64.b64decode(data.data)
             images = pdf2image.convert_from_bytes(pdf_data)
             # Convert PDF pages to images
             images_list = []
