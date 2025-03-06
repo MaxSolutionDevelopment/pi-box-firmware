@@ -51,6 +51,7 @@ class CloudflareConfig(BaseModel):
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
+# ENV_FILE_PATH = "/Users/longnhatdophuong/Documents/GitHub/pi-box-firmware/.env.example"
 
 @app.get('/')
 def read_root():
@@ -93,7 +94,7 @@ async def update_env():
                     }},
                     body: JSON.stringify(formData)
                 }})
-                .then(response => response.json())
+                .then(response => console.log(response))
                 .then(data => alert(data.message))
                 .catch(error => alert('Error: ' + error));
             }}
@@ -107,7 +108,7 @@ async def update_env():
             <label for="device_code">Device Code:</label><br>
             <input type="text" id="device_code" name="device_code" value="{env_dict.get('DEVICE_CODE', '')}"><br>
             <label for="odoo_webhook_url">Odoo Webhook URL:</label><br>
-            <input type="text" id="odoo_webhook_url" name="odoo_webhook_url" value="{env_dict.get('ODOO_WEBHOOK_URL', '')}"><br>
+            <input type="text" id="odoo_webhook_url" name="odoo_webhook_url" value="{env_dict.get('ODOO_URL', '')}"><br>
             <input type="submit" value="Submit">
         </form>
     </body>
