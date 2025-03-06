@@ -21,7 +21,7 @@ Description=FastAPI Service for Pi Box
 After=network.target
 
 [Service]
-ExecStart=$PYTHON_ENV $SERVICE_PATH
+ExecStart=/home/admin/pi-box-firmware/venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000
 WorkingDirectory=$WORKING_DIR
 Environment="PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 StandardOutput=append:/home/admin/logs/pi-box-output.log
@@ -68,7 +68,7 @@ fi
     #tạo nội dung avahi-daemon.conf
     echo    "
 [server]
-host-name=$DEVICE_NAME.local
+host-name=$DEVICE_NAME
 use-ipv4=yes
 use-ipv6=no
 ratelimit-interval-usec=1000000
@@ -97,6 +97,5 @@ enable-wide-area=yes
     else
         echo "avahi-daemon is not running."
     fi
-fi
 
 

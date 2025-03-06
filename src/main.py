@@ -55,17 +55,24 @@ def print_label(data: PrintData):
         ## .............
         pdf_data = base64.b64decode(data.data)
         debug_logs += f"PDF decode done\n"
-        images = pdf2image.convert_from_bytes(pdf_data)
-        # Convert PDF pages to images
-        images_list = []
-        for page in images:
-            img_byte_arr = BytesIO()
-            page.save(img_byte_arr, format='PNG')
+        if data.data.startswith("data:image/png;base64,"):
+            base64_data = data.data.split("data:image/png;base64,")[1]
+            img_data = base64.b64decode(base64_data)
+            image = Image.open(BytesIO(img_data))
+            image = image.convert("1")
+            images_list = [image]
+        else:
+            images = pdf2image.convert_from_bytes(pdf_data)
+            # Convert PDF pages to images
+            images_list = []
+            for page in images:
+                img_byte_arr = BytesIO()
+                page.save(img_byte_arr, format='PNG')
 
-            img_byte_arr = img_byte_arr.getvalue()
-            img = Image.open(BytesIO(img_byte_arr))
-            img = img.convert("1")
-            images_list.append(img)
+                img_byte_arr = img_byte_arr.getvalue()
+                img = Image.open(BytesIO(img_byte_arr))
+                img = img.convert("1")
+                images_list.append(img)
 
         debug_logs += f"Converted {len(images_list)} pages to images\n"
 
@@ -186,3 +193,9 @@ def trigger_update():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+
+
+# Run this file with command: python main.py
+# Then you can access the API via http://localhost:8000
