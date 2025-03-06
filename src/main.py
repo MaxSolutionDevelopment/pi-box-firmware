@@ -135,19 +135,8 @@ def print_label(data: PrintData):
         raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}, debug_logs: {debug_logs}")
 
 @app.post("/update-config")
-async def update_config(
-    vendor_id: str = Form(None),
-    device_code: str = Form(None),
-    odoo_webhook_url: str = Form(None),
-    env_path: str = Form(default='/home/admin/pi-box-firmware/.env')
-):
+def update_config(config: ConfigUpdate):
     try:
-        config = ConfigUpdate(
-            vendor_id=vendor_id,
-            device_code=device_code,
-            odoo_webhook_url=odoo_webhook_url,
-            env_path=env_path
-        )
         env_file_path = config.env_path if config.env_path else ENV_FILE_PATH
         # Đọc nội dung file .env
         env_content = ""
