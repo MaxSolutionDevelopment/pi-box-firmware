@@ -73,14 +73,35 @@ async def update_env():
             env_dict[key] = value
 
 
-    htmlcontent = f"""
+        htmlcontent = f"""
     <html>
     <head>
         <title>Update Config</title>
+        <script>
+            function submitForm(e) {{
+                e.preventDefault();
+                const formData = {{
+                    vendor_id: document.getElementById('vendor_id').value,
+                    device_code: document.getElementById('device_code').value,
+                    odoo_webhook_url: document.getElementById('odoo_webhook_url').value
+                }};
+                
+                fetch('/update-config', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify(formData)
+                }})
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .catch(error => alert('Error: ' + error));
+            }}
+        </script>
     </head>
     <body>
         <h1>Update Config</h1>
-        <form action="/update-config" method="post">
+        <form onsubmit="submitForm(event)">
             <label for="vendor_id">Vendor ID:</label><br>
             <input type="text" id="vendor_id" name="vendor_id" value="{env_dict.get('VENDOR_ID', '')}"><br>
             <label for="device_code">Device Code:</label><br>
@@ -92,6 +113,7 @@ async def update_env():
     </body>
     </html>
     """
+
     return HTMLResponse(content=htmlcontent)
 
 @app.post('/print')
