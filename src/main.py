@@ -196,37 +196,37 @@ def update_config(config: ConfigUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating config: {str(e)}")
 
-@app.post("/set-ngrok-token")
-def set_ngrok_token(config: NgrokConfig):
-    try:
-        # Tạo cấu hình cho ngrok.yml
-        ngrok_yml_content = \
-f"""
-version: "3"
+# @app.post("/set-ngrok-token")
+# def set_ngrok_token(config: NgrokConfig):
+#     try:
+#         # Tạo cấu hình cho ngrok.yml
+#         ngrok_yml_content = \
+# f"""
+# version: "3"
 
-agent:
-  authtoken: {config.authtoken}
+# agent:
+#   authtoken: {config.authtoken}
 
-tunnels:
-  first-app:
-    addr: {config.port}
-    proto: http
-"""
-        config_path = config.configpath if config.configpath else NGROK_CONFIG_PATH
+# tunnels:
+#   first-app:
+#     addr: {config.port}
+#     proto: http
+# """
+#         config_path = config.configpath if config.configpath else NGROK_CONFIG_PATH
 
-        # # Kiểm tra xem file ngrok.yml đã tồn tại chưa
-        if not Path(NGROK_CONFIG_PATH).is_file():
-            # Nếu chưa tồn tại thì tạo file ngrok.yml
-            Path(NGROK_CONFIG_PATH).touch
+#         # # Kiểm tra xem file ngrok.yml đã tồn tại chưa
+#         if not Path(NGROK_CONFIG_PATH).is_file():
+#             # Nếu chưa tồn tại thì tạo file ngrok.yml
+#             Path(NGROK_CONFIG_PATH).touch
         
-        # Ghi nội dung vào file ngrok.yml
-        with open(NGROK_CONFIG_PATH, "w") as file:
-            file.write(ngrok_yml_content)
+#         # Ghi nội dung vào file ngrok.yml
+#         with open(NGROK_CONFIG_PATH, "w") as file:
+#             file.write(ngrok_yml_content)
         
-        return {"status": "success", "message": "Ngrok token saved successfully."}
+#         return {"status": "success", "message": "Ngrok token saved successfully."}
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving token: {str(e)}")
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error saving token: {str(e)}")
 
 
 # Healthcheck endpoint
