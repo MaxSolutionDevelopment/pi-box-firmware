@@ -5,7 +5,6 @@ SERVICE_PATH="/home/admin/pi-box-firmware/src/main.py"
 SERVICE_NAME="pi-box.service"
 PYTHON_ENV="/home/admin/pi-box-firmware/venv/bin/python"
 WORKING_DIR="/home/admin/pi-box-firmware"
-SYSTEMD_PATH="/home/admin/pi-box-firmware/systemd"
 
 
 # Kiểm tra xem service đã tồn tại chưa
@@ -51,25 +50,25 @@ if [ -f /home/admin/pi-box-firmware/.env ]; then
     # Đọc file .env
     source /home/admin/pi-box-firmware/.env
 
-    #nếu chưa có DEVICE_NAME thì yêu cầu nhập
-    if [ -z "$DEVICE_NAME" ]; then
+    #nếu chưa có DEVICE_CODE thì yêu cầu nhập
+    if [ -z "$DEVICE_CODE" ]; then
         echo "Enter device name (e.g. pibox-berlin):"
-        read DEVICE_NAME
-        echo "DEVICE_NAME=$DEVICE_NAME" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
+        read DEVICE_CODE
+        echo "DEVICE_CODE=$DEVICE_CODE" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
     fi
 
 else
     echo "Creating .env file..."
     echo "Enter device name (e.g. pibox-berlin):"
-    read DEVICE_NAME
-    echo "DEVICE_NAME=" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
+    read DEVICE_CODE
+    echo "DEVICE_CODE=" | sudo tee /home/admin/pi-box-firmware/.env > /dev/null
     echo "File .env created successfully."
     sudo chown admin:admin /home/admin/pi-box-firmware/.env
 fi
     #tạo nội dung avahi-daemon.conf
     echo    "
 [server]
-host-name=$DEVICE_NAME
+host-name=$DEVICE_CODE
 use-ipv4=yes
 use-ipv6=no
 ratelimit-interval-usec=1000000
@@ -94,7 +93,7 @@ enable-wide-area=yes
         echo "avahi-daemon is running."
         #kiểm tra truy cập bằng hostname
         echo "Checking hostname..."
-        ping -c 1 $DEVICE_NAME.local
+        ping -c 1 $DEVICE_CODE.local
     else
         echo "avahi-daemon is not running."
     fi

@@ -33,8 +33,10 @@ class ConfigUpdate(BaseModel):
     custom_config: dict = None
 class NgrokConfig(BaseModel):
     authtoken: str
-    configpath: str = None
+    tunnel_name: str = "pi-box"
+    domain: str = None
     port: int = 8000
+    config_path: str = "/home/admin/ngrok.yml"
 
 class PrintData(BaseModel):
     printer_id: str = '0x04f9:0x209c'
@@ -156,6 +158,22 @@ def print_label(data: PrintData):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}, debug_logs: {debug_logs}")
+
+@app.post("/api/v1/credentials/update")
+async def update_credentials(
+    credentials: dict,
+    api_key: str = Header(None)
+):
+    if not verify_api_key(api_key):
+        raise HTTPException(401)
+    try:
+        backup_config()
+        update_config(credentials)
+        restart_affected_services()
+        return {"status": "success"}
+    except Exception as e:
+        restore_backup()
+        raise HTTPException(500, str(e))
 
 @app.post("/update-config")
 def update_config(config: ConfigUpdate):
@@ -367,6 +385,63 @@ def delete_cloudflare_tunnel(tunnel_name: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting tunnel: {str(e)}")
+
+@app.post("/ngrok/setup")
+def setup_ngrok(config: NgrokConfig):
+    try:
+        # Tạo cấu hình cho ngrok.yml
+        ngrok_config = {
+            "version": "3",
+            "agent": {
+                "authtoken": config.authtoken
+            },
+            "endpoints": [
+                {
+                    "name": config.tunnel_name,
+                    "url": config.domain,
+                    "upstream": {
+                        "url": config.port
+                    }
+                }
+            ]
+        }
+        
+        # Ghi cấu hình vào file
+        with open(config.config_path, "w") as f:
+            json.dump(ngrok_config, f, indent=2)
+            
+        # Restart ngrok service
+        subprocess.run(["sudo", "systemctl", "restart", "ngrok"])
+        
+        return {"status": "success", "message": "Ngrok configuration updated successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error configuring ngrok: {str(e)}")
+
+@app.get("/ngrok/status")
+def get_ngrok_status():
+    try:
+        # Kiểm tra trạng thái service
+        service_status = subprocess.run(
+            ["systemctl", "is-active", "ngrok"],
+            capture_output=True,
+            text=True
+        ).stdout.strip()
+
+        # Đọc cấu hình hiện tại
+        config_path = "/home/admin/ngrok.yml"
+        current_config = {}
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                current_config = json.load(f)
+
+        return {
+            "service_status": service_status,
+            "current_config": current_config
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting ngrok status: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

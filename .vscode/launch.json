@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "/Users/longnhatdophuong/Documents/python/odoo-17/bin/python3.10",
+            "program": "/Users/longnhatdophuong/Documents/GitHub/pi-box-firmware/src/main.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}

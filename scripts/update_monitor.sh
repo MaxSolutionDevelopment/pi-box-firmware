@@ -5,7 +5,7 @@ source /home/admin/pi-box-firmware/.env
 
 echo "Checking USB device with VENDOR_ID=$VENDOR_ID..."
 
-if lsusb | grep -q $VENDOR_ID; then
+if lsusb | grep "QL-810W"; then
     echo "USB device found."
 else
     echo "USB device not found."
@@ -31,6 +31,24 @@ if [[ "$NGROK_STATUS" == "active" ]]; then
     echo "ngrok service is running"
 else
     echo "ngrok service is not running"
+    sudo systemctl restart ngrok
+
+    if systemctl is-active --quiet ngrok; then
+        echo "ngrok service restarted successfully"
+    else
+        echo "Failed to restart ngrok service"
+        exit 1
+    fi
+fi
+
+# Kiểm tra trạng thái tunnel
+TUNNEL_STATUS=$(curl -s http://localhost:4040/api/tunnels)
+if [[ $? -ne 0 ]]; then
+    echo "Tunnel check failed: $TUNNEL_STATUS"
+    # Thử khởi động lại service
+    sudo systemctl restart ngrok
+else
+    echo "Tunnel is running: $TUNNEL_STATUS"
 fi
 
 # Kiểm tra trạng thái pi-box
@@ -50,25 +68,25 @@ else
 fi
 
 # Kiểm tra trạng thái cloudflared service
-if ! systemctl is-active --quiet cloudflared; then
-    echo "Cloudflared service is not running. Attempting to restart..."
-    sudo systemctl restart cloudflared
+# if ! systemctl is-active --quiet cloudflared; then
+#     echo "Cloudflared service is not running. Attempting to restart..."
+#     sudo systemctl restart cloudflared
     
-    # Kiểm tra lại sau khi khởi động
-    if systemctl is-active --quiet cloudflared; then
-        echo "Cloudflared service restarted successfully"
-    else
-        echo "Failed to restart cloudflared service"
-        exit 1
-    fi
-fi
+#     # Kiểm tra lại sau khi khởi động
+#     if systemctl is-active --quiet cloudflared; then
+#         echo "Cloudflared service restarted successfully"
+#     else
+#         echo "Failed to restart cloudflared service"
+#         exit 1
+#     fi
+# fi
 
 # Kiểm tra trạng thái tunnel
-TUNNEL_STATUS=$(cloudflared tunnel info 2>&1)
-if [[ $? -ne 0 ]]; then
-    echo "Tunnel check failed: $TUNNEL_STATUS"
-    # Thử khởi động lại service
-    sudo systemctl restart cloudflared
-else
-    echo "Tunnel is running: $TUNNEL_STATUS"
-fi
+# TUNNEL_STATUS=$(cloudflared tunnel info 2>&1)
+# if [[ $? -ne 0 ]]; then
+#     echo "Tunnel check failed: $TUNNEL_STATUS"
+#     # Thử khởi động lại service
+#     sudo systemctl restart cloudflared
+# else
+#     echo "Tunnel is running: $TUNNEL_STATUS"
+# fi
