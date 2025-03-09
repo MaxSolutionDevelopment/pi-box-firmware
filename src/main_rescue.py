@@ -5,7 +5,7 @@ try:
     from fastapi import FastAPI, HTTPException
 except ImportError:
     try:
-        subprocess.run(["pip", "install", "fastapi"])
+        subprocess.run(["pip", "install", "fastapi==0.95.0"])
         from fastapi import FastAPI, HTTPException
     except Exception as e:
         print("Please install fastapi")
@@ -15,7 +15,7 @@ try:
     from pydantic import BaseModel
 except ImportError:
     try:
-        subprocess.run(["pip", "install", "pydantic"])
+        subprocess.run(["pip", "install", "pydantic==1.10.0"])
         from pydantic import BaseModel
     except Exception as e:
         print("Please install pydantic")

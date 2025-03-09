@@ -1,16 +1,31 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-import subprocess
-import json
-import os
-from pathlib import Path
-import sys
-import base64
-from pydantic import BaseModel
 try:
+    from fastapi import FastAPI, HTTPException
+    from fastapi.responses import HTMLResponse
+    import subprocess
+    import json
+    import os
+    from pathlib import Path
+    import sys
+    import base64
+    from pydantic import BaseModel
     from dotenv import load_dotenv, set_key
 except ImportError:
-    print("Please install python-dotenv")
+    try:
+        subprocess.run(["pip", "install", "-r", "/home/admin/pi-box-firmware/requirements.txt"])
+        from fastapi import FastAPI, HTTPException
+        from fastapi.responses import HTMLResponse  
+        import subprocess
+        import json
+        import os
+        from pathlib import Path
+        import sys
+        import base64
+        from pydantic import BaseModel
+        from dotenv import load_dotenv, set_key
+    except ImportError as e:
+        print("Please install the required packages")
+        print(str(e))
+        exit(1)
 
 try:
     from io import BytesIO
