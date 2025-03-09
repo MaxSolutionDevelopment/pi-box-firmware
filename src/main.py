@@ -53,7 +53,6 @@ class CloudflareConfig(BaseModel):
 # Đường dẫn đến file ngrok.yml
 NGROK_CONFIG_PATH = "/home/admin/ngrok.yml"
 ENV_FILE_PATH = "/home/admin/pi-box-firmware/.env"
-# ENV_FILE_PATH = "/Users/longnhatdophuong/Documents/GitHub/pi-box-firmware/.env.example"
 
 @app.get('/')
 def read_root():
@@ -158,22 +157,6 @@ def print_label(data: PrintData):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error printing label: {str(e)}, debug_logs: {debug_logs}")
-
-@app.post("/api/v1/credentials/update")
-async def update_credentials(
-    credentials: dict,
-    api_key: str = Header(None)
-):
-    if not verify_api_key(api_key):
-        raise HTTPException(401)
-    try:
-        backup_config()
-        update_config(credentials)
-        restart_affected_services()
-        return {"status": "success"}
-    except Exception as e:
-        restore_backup()
-        raise HTTPException(500, str(e))
 
 @app.post("/update-config")
 def update_config(config: ConfigUpdate):
