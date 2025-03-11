@@ -59,6 +59,7 @@ class PrintData(BaseModel):
     label_size: str = '62'
     data: str  = ''
     debug: bool = False
+    kwargs: dict = None
 class CloudflareConfig(BaseModel):
     tunnel_name: str
     domain: str = None
@@ -165,7 +166,7 @@ def print_label(data: PrintData):
         qlr = BrotherQLRaster(data.printer_model)
         qlr.exception_on_warning = True
 
-        instructions = convert(qlr=qlr, images=images_list, label=data.label_size)
+        instructions = convert(qlr=qlr, images=images_list, label=data.label_size, **data.kwargs)
         
         send(instructions=instructions, printer_identifier=data.printer_id, backend_identifier="pyusb", blocking=True)
         return {"status": "success", "message": "Label printed successfully."}
