@@ -59,7 +59,7 @@ class PrintData(BaseModel):
     label_size: str = '62'
     data: str  = ''
     debug: bool = False
-    kwargs: dict = None
+    kwargs: dict = {}
 class CloudflareConfig(BaseModel):
     tunnel_name: str
     domain: str = None
